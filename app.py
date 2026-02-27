@@ -1,11 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 
-# API Ayarları
+# 1. AYARLAR: Kendi API Anahtarını tırnak içine yapıştır
 genai.configure(api_key="AIzaSyACo_b2KfNo7WyAitVNaXHLdn7r-UewhF8")
 model = genai.GenerativeModel('gemini-3.1-pro-preview')
 
-# Senin aldığın File ID'ler
+# 2. HAFIZA: Senin önceden aldığın ID'ler (Burası değişmez, çok hızlı çalışır)
 DOSYA_KUTUPHANESI = {
     "Tanzimat - Servetifünun": "files/zjqlna9sb89s",
     "Milli Edebiyat": "files/fv556sw4n1ie",
@@ -16,29 +16,32 @@ DOSYA_KUTUPHANESI = {
 
 st.set_page_config(page_title="Edebiyat Soru Botu", page_icon="📚")
 st.title("🎓 Edebiyat Sınav Asistanı")
+st.info("Jarvis 0.1 altyapısıyla hazırlanmıştır.") # Senin proje ismin ;)
 
 # Kategori Seçimi
-secilen_kategori = st.selectbox("Dönem Seçin:", list(DOSYA_KUTUPHANESI.keys()))
+secilen_kategori = st.selectbox("Hangi dönemden soru gelsin?", list(DOSYA_KUTUPHANESI.keys()))
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # Soru Sorma Butonu
-if st.button("Soru Sor 🚀"):
-    file_id = DOSYA_KUTUPHANESI[secilen_kategori]
+if st.button("Yeni Soru Sor 🚀"):
+    file_uri = DOSYA_KUTUPHANESI[secilen_kategori]
     
-    with st.spinner("Dosya taranıyor ve soru hazırlanıyor..."):
-        # Prompt'u doğrudan burada tanımlıyoruz ki hata vermesin
-        talimat = f"Sana verdiğim dosyaya bakarak {secilen_kategori} hakkında 4 şıklı, kaliteli bir soru sor. Cevabı en altta gizli bir şekilde belirt."
-        
-        # Dosyayı ID ile bağlayıp soruyu soruyoruz
-        response = model.generate_content([
-            {'file_data': {'file_uri': file_id, 'mime_type': 'application/pdf'}}, 
-            talimat
-        ])
-        
-        # Geçmişe ekle
-        st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+    with st.spinner("Büyük dosyalar taranıyor, saniyeler içinde hazır..."):
+        try:
+            # 3. KRİTİK NOKTA: Dosyayı ID ile çağırmanın en doğru yolu budur
+            response = model.generate_content([
+                {
+                    "mime_type": "application/pdf",
+                    "file_uri": f"https://generativelanguage.googleapis.com/v1beta/{file_uri}"
+                },
+                f"Sana verdiğim {secilen_kategori} dosyasını incele ve bana 4 şıklı bir edebiyat sorusu sor. Cevabı en sona sakla."
+            ])
+            
+            st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+        except Exception as e:
+            st.error(f"Bir hata oluştu: {e}")
 
 # Sohbet Geçmişini Göster
 for message in reversed(st.session_state.chat_history):

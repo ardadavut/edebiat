@@ -24,20 +24,22 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 if st.button("Yeni Soru Sor 🚀"):
-    file_uri = DOSYA_KUTUPHANESI[secilen_kategori]
-    
-    with st.spinner("Dosya taranıyor..."):
-        try:
-            # En son belirlediğimiz hatasız format
-            response = model.generate_content([
-                {
-                    "file_data": {
-                        "mime_type": "application/pdf",
-                        "file_uri": file_uri
-                    }
-                },
-                f"Sana verdiğim {secilen_kategori} dosyasını incele ve bana 4 şıklı bir edebiyat sorusu sor. Cevabı en sona sakla."
-            ])
+    # Hatalı olan kısmı şu şekilde güncelle:
+    file_id = DOSYA_KUTUPHANESI[secilen_kategori]
+# Başına tam adresi ekliyoruz:
+    tam_adres = f"https://generativelanguage.googleapis.com/v1beta/{file_id}"
+
+with st.spinner("Dosya taranıyor..."):
+    try:
+        response = model.generate_content([
+            {
+                "file_data": {
+                    "mime_type": "application/pdf",
+                    "file_uri": tam_adres  # Artık tam adresi gönderiyoruz
+                }
+            },
+            f"Sana verdiğim {secilen_kategori} dosyasını incele ve bana 4 şıklı bir edebiyat sorusu sor. Cevabı en sona sakla."
+        ])
             
             st.session_state.chat_history.append({"role": "assistant", "content": response.text})
         except Exception as e:
@@ -46,4 +48,5 @@ if st.button("Yeni Soru Sor 🚀"):
 for message in reversed(st.session_state.chat_history):
     with st.chat_message(message["role"]):
         st.write(message["content"])
+
 

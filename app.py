@@ -30,7 +30,8 @@ if st.button("Soru Sor 🚀"):
     file_id = DOSYA_KUTUPHANESI[secilen_kategori]
     
     # Dosyayı buluyoruz
-    ilgili_dosya = genai.get_file(file_id)
+    # Doğrudan ID üzerinden erişim sağlayan güvenli yöntem
+response = model.generate_content([{'file_data': {'file_uri': file_id, 'mime_type': 'application/pdf'}}, prompt])
     
     with st.spinner("Dosya taranıyor ve soru hazırlanıyor..."):
         # Gemini'ye dosyayı ve komutu gönderiyoruz
@@ -43,4 +44,5 @@ if st.button("Soru Sor 🚀"):
 # Sohbet Geçmişini Göster
 for message in reversed(st.session_state.chat_history):
     with st.chat_message(message["role"]):
+
         st.write(message["content"])

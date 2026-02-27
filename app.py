@@ -25,16 +25,19 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # Soru Sorma Butonu
+# Soru Sorma Butonu
 if st.button("Yeni Soru Sor 🚀"):
     file_uri = DOSYA_KUTUPHANESI[secilen_kategori]
     
     with st.spinner("Büyük dosyalar taranıyor, saniyeler içinde hazır..."):
         try:
-            # 3. KRİTİK NOKTA: Dosyayı ID ile çağırmanın en doğru yolu budur
+            # DOĞRU FORMAT BURASI: 'file_data' anahtarını ekledik
             response = model.generate_content([
                 {
-                    "mime_type": "application/pdf",
-                    "file_uri": f"https://generativelanguage.googleapis.com/v1beta/{file_uri}"
+                    "file_data": {
+                        "mime_type": "application/pdf",
+                        "file_uri": file_uri # 'files/...' formatındaki ID yeterli
+                    }
                 },
                 f"Sana verdiğim {secilen_kategori} dosyasını incele ve bana 4 şıklı bir edebiyat sorusu sor. Cevabı en sona sakla."
             ])
@@ -47,3 +50,4 @@ if st.button("Yeni Soru Sor 🚀"):
 for message in reversed(st.session_state.chat_history):
     with st.chat_message(message["role"]):
         st.write(message["content"])
+

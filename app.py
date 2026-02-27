@@ -1,11 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. AYARLAR: Kendi API Anahtarını tırnak içine yapıştır
-genai.configure(api_key="AIzaSyACo_b2KfNo7WyAitVNaXHLdn7r-UewhF8")
+# GÜVENLİ ANAHTAR: Artık anahtarı buradan değil, Streamlit Secrets'tan alıyor
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model = genai.GenerativeModel('gemini-3.1-pro-preview')
 
-# 2. HAFIZA: Senin önceden aldığın ID'ler (Burası değişmez, çok hızlı çalışır)
+# DOSYA KİMLİKLERİ: Bunlar aynen kalıyor, tekrar yükleme yapmana gerek yok
 DOSYA_KUTUPHANESI = {
     "Tanzimat - Servetifünun": "files/zjqlna9sb89s",
     "Milli Edebiyat": "files/fv556sw4n1ie",
@@ -16,27 +16,24 @@ DOSYA_KUTUPHANESI = {
 
 st.set_page_config(page_title="Edebiyat Soru Botu", page_icon="📚")
 st.title("🎓 Edebiyat Sınav Asistanı")
-st.info("Jarvis 0.1 altyapısıyla hazırlanmıştır.") # Senin proje ismin ;)
+st.info("Jarvis 0.1 altyapısıyla hazırlanmıştır.")
 
-# Kategori Seçimi
 secilen_kategori = st.selectbox("Hangi dönemden soru gelsin?", list(DOSYA_KUTUPHANESI.keys()))
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Soru Sorma Butonu
-# Soru Sorma Butonu
 if st.button("Yeni Soru Sor 🚀"):
     file_uri = DOSYA_KUTUPHANESI[secilen_kategori]
     
-    with st.spinner("Büyük dosyalar taranıyor, saniyeler içinde hazır..."):
+    with st.spinner("Dosya taranıyor..."):
         try:
-            # DOĞRU FORMAT BURASI: 'file_data' anahtarını ekledik
+            # En son belirlediğimiz hatasız format
             response = model.generate_content([
                 {
                     "file_data": {
                         "mime_type": "application/pdf",
-                        "file_uri": file_uri # 'files/...' formatındaki ID yeterli
+                        "file_uri": file_uri
                     }
                 },
                 f"Sana verdiğim {secilen_kategori} dosyasını incele ve bana 4 şıklı bir edebiyat sorusu sor. Cevabı en sona sakla."
@@ -46,8 +43,6 @@ if st.button("Yeni Soru Sor 🚀"):
         except Exception as e:
             st.error(f"Bir hata oluştu: {e}")
 
-# Sohbet Geçmişini Göster
 for message in reversed(st.session_state.chat_history):
     with st.chat_message(message["role"]):
         st.write(message["content"])
-

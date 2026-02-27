@@ -24,25 +24,30 @@ secilen_kategori = st.selectbox("Dönem Seçin:", list(DOSYA_KUTUPHANESI.keys())
 if "soru_data" not in st.session_state:
     st.session_state.soru_data = None
 
+# Soru Sorma Butonu İçindeki Kısım
 if st.button("Yeni Soru Getir 🚀"):
     file_id = DOSYA_KUTUPHANESI[secilen_kategori]
     tam_adres = f"https://generativelanguage.googleapis.com/v1beta/{file_id}"
     
-    with st.spinner("Soru hazırlanıyor..."):
+    with st.spinner("Notlar taranıyor (Hızlı Mod)..."):
         try:
-            # Gemini'ye "Bana sadece JSON formatında cevap ver" diyoruz
+            # HIZLI PROMPT: Dosyanın tamamını değil, küçük bir kısmını odakla diyoruz
             prompt = (
-                f"Sana verdiğim {secilen_kategori} dosyasından zor bir soru seç. "
-                "Cevabı tam olarak şu JSON formatında ver: "
-                '{"soru": "Soru metni", "siklar": ["A şıkkı", "B şıkkı", "C şıkkı", "D şıkkı"], "cevap": "Doğru Şık Metni"}'
+                f"Bu dosyanın içinden rastgele bir sayfa seç ve {secilen_kategori} hakkında zor bir soru üret. "
+                "Tüm dosyayı analiz etmek için vakit kaybetme, hızlı ol. "
+                "Cevabı şu JSON formatında ver: "
+                '{"soru": "...", "siklar": ["...", "...", "...", "..."], "cevap": "..."}'
             )
             
+            # Flash model zaten çok hızlıdır
             response = model.generate_content([
                 {"file_data": {"mime_type": "application/pdf", "file_uri": tam_adres}},
                 prompt
-            ], generation_config={"response_mime_type": "application/json"})
+            ], generation_config={
+                "response_mime_type": "application/json",
+                "candidate_count": 1 # Sadece 1 cevap üretmesi hızı artırır
+            })
             
-            # Gelen JSON'u temizleyip sözlüğe çeviriyoruz
             st.session_state.soru_data = json.loads(response.text)
             st.session_state.cevap_verildi = False
         except Exception as e:
@@ -60,3 +65,4 @@ if st.session_state.soru_data:
                 st.success("✅ Tebrikler! Doğru cevap.")
             else:
                 st.error(f"❌ Maalesef yanlış. Doğru cevap: {st.session_state.soru_data['cevap']}")
+

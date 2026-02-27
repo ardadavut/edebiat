@@ -3,7 +3,7 @@ import google.generativeai as genai
 
 # GÜVENLİ ANAHTAR: Artık anahtarı buradan değil, Streamlit Secrets'tan alıyor
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-3.1-pro-preview')
+model = genai.GenerativeModel('gemini-3-flash-preview')
 
 # DOSYA KİMLİKLERİ: Bunlar aynen kalıyor, tekrar yükleme yapmana gerek yok
 DOSYA_KUTUPHANESI = {
@@ -46,3 +46,4 @@ if st.button("Yeni Soru Sor 🚀"):
 for message in reversed(st.session_state.chat_history):
     with st.chat_message(message["role"]):
         st.write(message["content"])
+

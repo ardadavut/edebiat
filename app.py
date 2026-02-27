@@ -31,7 +31,7 @@ if st.button("Soru Sor 🚀"):
     
     # Dosyayı buluyoruz
     # Doğrudan ID üzerinden erişim sağlayan güvenli yöntem
-response = model.generate_content([{'file_data': {'file_uri': file_id, 'mime_type': 'application/pdf'}}, prompt])
+    response = model.generate_content([{'file_data': {'file_uri': file_id, 'mime_type': 'application/pdf'}}, prompt])
     
     with st.spinner("Dosya taranıyor ve soru hazırlanıyor..."):
         # Gemini'ye dosyayı ve komutu gönderiyoruz
